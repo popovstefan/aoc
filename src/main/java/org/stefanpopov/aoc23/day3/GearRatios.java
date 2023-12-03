@@ -3,9 +3,7 @@ package org.stefanpopov.aoc23.day3;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -13,16 +11,18 @@ public class GearRatios {
 
     public static void main(String[] args) throws IOException {
         String filename = "C:\\Users\\popov\\IdeaProjects\\aoc\\src\\main\\java\\org\\stefanpopov\\aoc23\\day3\\puzzleinput.txt";
-        int task2Result = task2(filename);
+        long task2Result = task2(filename);
         System.out.printf("Result of task 2 is [%d]%n", task2Result);
     }
 
-    private static int task2(String filename) throws IOException {
+    private static long task2(String filename) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(filename));
         String line;
         String previousLine = null;
         String currentLine = null;
         String nextLine = null;
+        int x = 0;
+        List<Map.Entry<Integer, String>> partNumberToStar1 = new LinkedList<>();
         HashMap<Integer, String> partNumberToStar = new HashMap<>();
         while ((line = reader.readLine()) != null) {
             if (previousLine == null && currentLine == null) { // 1st line
@@ -47,10 +47,12 @@ public class GearRatios {
                                 check |= hasStarAround(previousLine, currentLine, nextLine, j);
                                 if (hasStarAround(previousLine, currentLine, nextLine, j)) {
                                     partNumberToStar.put(number, starHash(previousLine, currentLine, nextLine, j));
+                                    partNumberToStar1.add(new AbstractMap.SimpleEntry<>(number, starHash(previousLine, currentLine, nextLine, j)));
+                               x++;
                                 }
                             }
                             if (check) {
-                                System.out.printf("has star around [%s] adding [%d]%n", currentLine, number);
+                                System.out.printf("[%d] has star around [%s] adding [%d]%n", x, currentLine, number);
                             }
                             // reset start index
                             si = -1;
@@ -80,10 +82,12 @@ public class GearRatios {
                                 check |= hasStarAround(previousLine, currentLine, nextLine, j);
                                 if (hasStarAround(previousLine, currentLine, nextLine, j)) {
                                     partNumberToStar.put(number, starHash(previousLine, currentLine, nextLine, j));
+                                    partNumberToStar1.add(new AbstractMap.SimpleEntry<>(number, starHash(previousLine, currentLine, nextLine, j)));
+                                x++;
                                 }
                             }
                             if (check) {
-                                System.out.printf("has star around [%s] adding %d%n", currentLine, number);
+                                System.out.printf("[%d] has star around [%s] adding %d%n", x, currentLine, number);
                             }
                             // reset start index
                             number = 0;
@@ -111,10 +115,12 @@ public class GearRatios {
                         check |= hasStarAround(previousLine, currentLine, nextLine, j);
                         if (hasStarAround(previousLine, currentLine, nextLine, j)) {
                             partNumberToStar.put(number, starHash(previousLine, currentLine, nextLine, j));
+                            partNumberToStar1.add(new AbstractMap.SimpleEntry<>(number, starHash(previousLine, currentLine, nextLine, j)));
+                    x++;
                         }
                     }
                     if (check) {
-                        System.out.printf("has star around [%s] adding [[%d]]%n", currentLine, number);
+                        System.out.printf("[%d] has star around [%s] adding [[%d]]%n", x, currentLine, number);
                     }
                     // reset start index
                     si = -1;
@@ -124,6 +130,16 @@ public class GearRatios {
         }
         // continue map calculations here
         // only values with 2 occurrences exactly
+        Set<String> validStars1 = partNumberToStar1
+                .stream()
+                .map(Map.Entry::getValue)
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+                .entrySet()
+                .stream()
+                .filter(it -> it.getValue() == 2)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
+        System.out.printf("Valid stars1 size %d %n", validStars1.size());
         Set<String> validStars = partNumberToStar
                 .values()
                 .stream()
@@ -134,22 +150,23 @@ public class GearRatios {
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toSet());
         System.out.println("There are " + validStars.size() + " valid stars");
-        HashMap<String, Integer> preResultStarToRatio = new HashMap<>();
-        partNumberToStar
-                .entrySet()
+        HashMap<String, Long> preResultStarToRatio = new HashMap<>();
+        partNumberToStar1
+//                .entrySet()
                 .stream()
-                .filter(it -> validStars.contains(it.getValue()))
+                .filter(it -> validStars1.contains(it.getValue()))
                 .forEach(it -> {
-                    preResultStarToRatio.putIfAbsent(it.getValue(), 1);
+                    preResultStarToRatio.putIfAbsent(it.getValue(), 1L);
                     preResultStarToRatio.computeIfPresent(it.getValue(), (star, ratio) -> ratio * it.getKey());
                 });
         System.out.printf("preResultStarToRatio size %d%n", preResultStarToRatio.size());
-        System.out.printf("numbers to Stars size %d%n", partNumberToStar.size());
-        System.out.printf("Unique stars there %d%n", partNumberToStar.values().stream().distinct().toList().size());
+        System.out.printf("numbers to Stars size %d%n", partNumberToStar1.size());
+        System.out.printf("numbers to starrs size %d%n", partNumberToStar.size());
+        System.out.printf("Unique stars there %d%n", partNumberToStar1.stream().map(it -> it.getValue()).distinct().toList().size());
         return preResultStarToRatio
                 .values()
                 .stream()
-                .mapToInt(it -> it)
+                .mapToLong(it -> it)
                 .sum();
     }
 
