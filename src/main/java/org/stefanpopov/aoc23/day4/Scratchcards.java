@@ -3,15 +3,12 @@ package org.stefanpopov.aoc23.day4;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 class Card {
-    private int number;
-    private Set<Integer> numbersYouHave;
-    private Set<Integer> winningNumbers;
+    private final int number;
+    private final Set<Integer> numbersYouHave;
+    private final Set<Integer> winningNumbers;
 
     public Card(int number, Set<Integer> numbersYouHave, Set<Integer> winningNumbers) {
         this.number = number;
@@ -25,39 +22,19 @@ class Card {
         return theNumbersYouHave.size();
     }
 
-    public int getNumber() {
-        return number;
-    }
-
-    public void setNumber(int number) {
-        this.number = number;
-    }
-
-    public Set<Integer> getNumbersYouHave() {
-        return numbersYouHave;
-    }
-
-    public void setNumbersYouHave(Set<Integer> numbersYouHave) {
-        this.numbersYouHave = numbersYouHave;
-    }
-
-    public Set<Integer> getWinningNumbers() {
-        return winningNumbers;
-    }
-
-    public void setWinningNumbers(Set<Integer> winningNumbers) {
-        this.winningNumbers = winningNumbers;
-    }
-
     @Override
     public String toString() {
         return String.format("Card{number=%d,numbersYouHave=%s,winningNumbers=%s}", number, numbersYouHave, winningNumbers);
+    }
+
+    public Integer getNumber() {
+        return number;
     }
 }
 
 public class Scratchcards {
     public static void main(String[] args) throws IOException {
-        String filename = "C:\\Users\\popov\\IdeaProjects\\aoc\\src\\main\\java\\org\\stefanpopov\\aoc23\\day4\\puzzleinputtest.txt";
+        String filename = "C:\\Users\\popov\\IdeaProjects\\aoc\\src\\main\\java\\org\\stefanpopov\\aoc23\\day4\\puzzleinput.txt";
         int task1Result = task1(filename);
         System.out.printf("Result of task 2 is [%d]%n", task1Result);
     }
@@ -65,7 +42,7 @@ public class Scratchcards {
     private static int task1(String filename) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(filename));
         String line;
-        Card[] cards = new Card[1000];
+        TreeMap<Integer, Map.Entry<Card, Integer>> numberToCards = new TreeMap<>();
         while ((line = reader.readLine()) != null) {
             String[] lineParts = line.split(":");
             int cardNumber = Integer.parseInt(lineParts[0].split("\\s+")[1]);
@@ -83,37 +60,34 @@ public class Scratchcards {
                     theWinningNumbers.add(Integer.parseInt(winningNumber.trim()));
             }
             Card card = new Card(cardNumber, theNumbersYouHave, theWinningNumbers);
-            cards[cardNumber] = card;
+            numberToCards.putIfAbsent(cardNumber, new AbstractMap.SimpleEntry<>(card, 1));
         }
 
-        // process cards
-        List<Card> cardList = new LinkedList<>();
-        for (int i = 0; i < cards.length; i++) {
-            if (cards[i] != null) {
-                int m = cards[i].getMatching();
-                for (int j = i; j < Math.min(m + i, cards.length); j++) {
-                    if (cards[j] != null) {
-                        cardList.add(cards[j]);
-                        System.out.printf("ADding carad %d%n", cards[j].getNumber());
-                    }
+//        numberToCards.forEach((k,v)-> System.out.printf("%s %s%n", k, v));
+
+        for (Map.Entry<Integer, Map.Entry<Card, Integer>> entry : numberToCards.entrySet()) {
+            Map.Entry<Card, Integer> map = entry.getValue();
+            System.out.printf("Card %s with value %d%n", map.getKey(), map.getValue());
+            for (int i = 1; i <= map.getValue(); i++) {
+                // for each card here
+                int m = map.getKey().getMatching();
+                System.out.printf("Matching %d%n", m);
+                for (int j = 0; j < m; j++) {
+                    Map.Entry<Card, Integer> oldEntry = numberToCards.get(map.getKey().getNumber() + j + 1);
+                    if (oldEntry == null)
+                        break;
+                    oldEntry.setValue(oldEntry.getValue() + 1); // add a card
+                    System.out.printf("Putting %s at %d%n", oldEntry, map.getKey().getNumber() + j + 1);
+                    numberToCards.put(map.getKey().getNumber() + j + 1, oldEntry);
                 }
             }
         }
-        System.out.printf("Card list sisze %d%n", cardList.size());
-        // another processing
-        List<Card> cardList1 = new LinkedList<>();
-        for (int i = 0; i < cardList.size(); i++) {
-            Card card = cardList.get(i);
-            for (int j = card.getNumber(); j < cards.length; j++) {
-
-            }
-        }
-        System.out.println(cardList.stream().filter(it -> it.getNumber() == 4).count());
-        int s = 0;
-        for (int i = 0; i < cards.length; i++) {
-            if (cards[i] != null)
-                s++;
-        }
-        return cardList1.size() + cardList.size() + s;
+        System.out.printf("Number to cards %s%n", numberToCards);
+        return numberToCards
+                .values()
+                .stream()
+                .map(Map.Entry::getValue)
+                .mapToInt(it -> it)
+                .sum();
     }
 }
