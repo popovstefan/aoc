@@ -69,12 +69,12 @@ class Node {
 
 public class HauntedWasteland {
     public static void main(String[] args) throws IOException {
-        String filename = "C:\\Users\\popov\\IdeaProjects\\aoc\\src\\main\\java\\org\\stefanpopov\\aoc23\\day8\\puzzleinput.txt";
-        int task1Result = task1(filename);
+        String filename = "C:\\Users\\popov\\IdeaProjects\\aoc\\src\\main\\java\\org\\stefanpopov\\aoc23\\day8\\2puzzleinput.txt";
+        long task1Result = task1(filename);
         System.out.printf("Result of task 1 is [%d]%n", task1Result);
     }
 
-    private static int task1(String filename) throws IOException {
+    private static long task1(String filename) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(filename));
         String line;
         String directions = "";
@@ -110,23 +110,46 @@ public class HauntedWasteland {
             }
 
         }
-        System.out.println(nodes);
-        System.out.println(directions);
-        directions = new String(new char[100]).replace("\0", directions);
-        Node start = nodes.get("AAA");
-        List<Node> startNodes = new LinkedList<>();
-        int steps = 0;
-        for (int i = 0; i < directions.length(); i++) {
-            System.out.printf("Node %s%n", start);
-            if (directions.charAt(i) == 'R')
-                start = nodes.get(start.getRight().getLocation());
-            else
-                start = nodes.get(start.getLeft().getLocation());
-            steps++;
-            if (start != null && start.getLocation().equals("ZZZ")) {
-                break;
+        directions = new String(new char[10000]).replace("\0", directions);
+        List<Node> startNodes = nodes.entrySet()
+                .stream()
+                .filter(it -> it.getKey().endsWith("A"))
+                .map(Map.Entry::getValue)
+                .toList();
+        List<Long> lengths = new LinkedList<>();
+
+        for (int k = 0; k < startNodes.size(); k++) {
+            long steps = 0;
+            Node start = startNodes.get(k);
+            for (int i = 0; i < directions.length(); i++) {
+                System.out.printf("Node %s%n", start);
+                if (directions.charAt(i) == 'R')
+                    start = nodes.get(start.getRight().getLocation());
+                else
+                    start = nodes.get(start.getLeft().getLocation());
+                steps++;
+                if (start != null && start.getLocation().endsWith("Z")) {
+                    break;
+                }
             }
+            lengths.add(steps);
         }
-        return steps;
+        return lcm(lengths);
+    }
+
+    private static long gcd(long x, long y) {
+        return (y == 0) ? x : gcd(y, x % y);
+    }
+
+    public static long gcd(long... numbers) {
+        return Arrays.stream(numbers).reduce(0, HauntedWasteland::gcd);
+    }
+
+    public static long lcm(long... numbers) {
+        return Arrays.stream(numbers).reduce(1, (x, y) -> x * (y / gcd(x, y)));
+    }
+
+    public static long lcm(List<Long> numbers) {
+        return numbers.stream().reduce(1L, (x, y) -> x * (y / gcd(x, y)));
     }
 }
