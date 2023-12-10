@@ -108,7 +108,7 @@ class Pipe {
                 || someChar == NW_BEND
                 || someChar == SW_BEND
                 || someChar == SE_BEND
-                || someChar == START;
+                ;//|| someChar == START;
     }
 
     public List<Pipe> init(char[][] maze) {
@@ -118,22 +118,22 @@ class Pipe {
             // top row, left-to-right
 //            if (j > 0 && this.isValid(maze[i - 1][j - 1]))
 //                result.add(new Pipe(i - 1, j - 1, maze[i - 1][j - 1]));
-            if (this.isValid(maze[i - 1][j]))
+            if (this.isValid(maze[i - 1][j]) && (maze[i - 1][j] == VERTICAL_PIPE || maze[i - 1][j] == SW_BEND || maze[i - 1][j] == SE_BEND))
                 result.add(new Pipe(i - 1, j, maze[i - 1][j]));
 //            if (j < maze[i - 1].length - 1 && this.isValid(maze[i - 1][j + 1]))
 //                result.add(new Pipe(i - 1, j + 1, maze[i - 1][j + 1]));
         }
         // current row, left then right
-        if (j > 0 && this.isValid(maze[i][j - 1]))
+        if (j > 0 && this.isValid(maze[i][j - 1]) && (maze[i][j - 1] == HORIZONTAL_PIPE || maze[i][j - 1] == SE_BEND || maze[i][j - 1] == NE_BEND))
             result.add(new Pipe(i, j - 1, maze[i][j - 1]));
-        if (j < maze[i].length - 1 && this.isValid(maze[i][j + 1]))
+        if (j < maze[i].length - 1 && this.isValid(maze[i][j + 1]) && (maze[i][j + 1] == HORIZONTAL_PIPE || maze[i][j + 1] == SW_BEND || maze[i][j + 1] == NW_BEND))
             result.add(new Pipe(i, j + 1, maze[i][j + 1]));
 
         if (i < maze.length - 1) {
             // bottom row, left-to-right
 //            if (j > 0 && this.isValid(maze[i + 1][j - 1]))
 //                result.add(new Pipe(i + 1, j - 1, maze[i + 1][j - 1]));
-            if (this.isValid(maze[i + 1][j]))
+            if (this.isValid(maze[i + 1][j]) && (maze[i + 1][j] == VERTICAL_PIPE || maze[i + 1][j] == NE_BEND || maze[i + 1][j] == NW_BEND))
                 result.add(new Pipe(i + 1, j, maze[i + 1][j]));
 //            if (j < maze[i + 1].length - 1 && this.isValid(maze[i + 1][j + 1]))
 //                result.add(new Pipe(i + 1, j + 1, maze[i + 1][j + 1]));
