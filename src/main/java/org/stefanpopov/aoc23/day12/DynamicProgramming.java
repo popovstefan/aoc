@@ -4,16 +4,50 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
-class Node<T> {
-    private T value;
+
+class Tree {
+    private Node root;
+
+    public Tree(Node root) {
+        this.root = root;
+    }
+
+    public Node getRoot() {
+        return root;
+    }
+
+    public void insert(Node node, String sequence, char lastChar) {
+        Node current = root;
+        for (int i = 0; i < sequence.length(); i++) {
+            if (current == null)
+                break;
+            else {
+                if (sequence.charAt(i) == '#')
+                    current = current.getLeft();
+                else
+                    current = current.getRight();
+            }
+        }
+        if (lastChar == '.')
+            current.setRight(node);
+        else if (lastChar == '#')
+            current.setLeft(node);
+        else if (lastChar == '?') {
+            current.setRight(Node.of('.', current.getDepth() + 1L));
+            current.setLeft(Node.of('#', current.getDepth() + 1L));
+        }
+    }
+}
+
+class Node {
+    private char value;
     private long depth;
-    private Node<T> left;
-    private Node<T> right;
-    private List<Node<T>> children;
+    private Node left;
+    private Node right;
+    private List<Node> children;
 
-    private Node(T value, long depth) {
+    private Node(char value, long depth) {
         this.depth = depth;
         this.value = value;
         this.left = null;
@@ -21,19 +55,19 @@ class Node<T> {
         this.children = new ArrayList<>();
     }
 
-    public void setRight(Node<T> right) {
+    public void setRight(Node right) {
         this.right = right;
     }
 
-    public void setLeft(Node<T> left) {
+    public void setLeft(Node left) {
         this.left = left;
     }
 
-    public Node<T> getRight() {
+    public Node getRight() {
         return right;
     }
 
-    public Node<T> getLeft() {
+    public Node getLeft() {
         return left;
     }
 
@@ -41,22 +75,22 @@ class Node<T> {
         return depth;
     }
 
-    public T getValue() {
+    public char getValue() {
         return value;
     }
 
-    public Node<T> addChild(T value, long depth) {
-        Node newChild = new Node<>(value, depth);
+    public Node addChild(char value, long depth) {
+        Node newChild = new Node(value, depth);
         children.add(newChild);
         return newChild;
     }
 
-    public List<Node<T>> getChildren() {
+    public List<Node> getChildren() {
         return Collections.unmodifiableList(children);
     }
 
-    public static <T> Node<T> of(T value, long depth) {
-        return new Node<>(value, depth);
+    public static Node of(char value, long depth) {
+        return new Node(value, depth);
     }
 
     @Override
@@ -79,7 +113,7 @@ public class DynamicProgramming {
     public static long task1(String filename) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(filename));
         String line;
-        Node<Character> root = Node.of('S', 0);
+        Node root = Node.of('S', 0);
         while ((line = reader.readLine()) != null) {
             String[] lineParts = line.split("\\s+");
             List<Long> numbers = Arrays.stream(lineParts[1].split(","))
@@ -89,7 +123,8 @@ public class DynamicProgramming {
                     .toList();
             String springSequence = lineParts[0].trim();
             int springSize = springSequence.length();
-            for (int i = 0 + 1; i < springSize; i++) {
+            List<Node> addedChildren = new LinkedList<>();
+            for (int i = 0; i < springSize; i++) {
                 if (isValidPath(numbers, springSequence.substring(0, i))) {
                     // add child, yeah? 
                 }
